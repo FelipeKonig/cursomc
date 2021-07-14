@@ -29,7 +29,10 @@ public class Produto implements Serializable {
 
 	@JsonBackReference
 	@ManyToMany
-	@JoinTable(name = "tb_produto_categoria", joinColumns = @JoinColumn(name = "produto_id"), inverseJoinColumns = @JoinColumn(name = "categoria_id"))
+	@JoinTable(name = "tb_produto_categoria", 
+		joinColumns = @JoinColumn(name = "produto_id"), 
+		inverseJoinColumns = @JoinColumn(name = "categoria_id")
+	)
 	private List<Categoria> categorias = new ArrayList<>();
 
 	public Produto() {
