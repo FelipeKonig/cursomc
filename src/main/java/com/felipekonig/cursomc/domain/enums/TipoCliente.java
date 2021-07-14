@@ -2,7 +2,7 @@ package com.felipekonig.cursomc.domain.enums;
 
 public enum TipoCliente {
 
-	PESSOAFISICA(1, "Pessoa física"),
+	PESSOAFISICA(1, "Pessoa física"), 
 	PESSOAJURIDICA(2, "Pessoa jurídica");
 
 	private int cod;
@@ -32,7 +32,7 @@ public enum TipoCliente {
 				return x;
 			}
 		}
-		
+
 		throw new IllegalStateException("Código inválido: " + cod);
 	}
 }
