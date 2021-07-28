@@ -1,5 +1,6 @@
 package com.felipekonig.cursomc.services;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.felipekonig.cursomc.domain.Cidade;
 import com.felipekonig.cursomc.domain.Cliente;
@@ -37,6 +39,9 @@ public class ClienteService {
 	
 	@Autowired
 	private EnderecoRepository repoEndereco;
+	
+	@Autowired
+	private S3Service s3Service;
 
 	public Cliente find(Integer id) {
 		
@@ -104,6 +109,10 @@ public class ClienteService {
 			cli.getTelefones().add(objDTO.getTelefone3());
 		}
 		return cli;
+	}
+	
+	public URI uploadProfilePicture(MultipartFile multipartFile) {
+		return s3Service.uploadFile(multipartFile);
 	}
 
 	private void updateData(Cliente newObj, Cliente obj) {

@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.felipekonig.cursomc.domain.Cliente;
@@ -75,7 +76,7 @@ public class ClienteResource {
 
 		return ResponseEntity.ok().body(listDTO);
 	}
-	
+
 	@PreAuthorize("hasAnyRole('ADMIN')")
 	@RequestMapping(value = "/page", method = RequestMethod.GET)
 	public ResponseEntity<Page<ClienteDTO>> findPage(@RequestParam(value = "page", defaultValue = "0") Integer page,
@@ -89,4 +90,11 @@ public class ClienteResource {
 		return ResponseEntity.ok().body(listDTO);
 	}
 
+	@RequestMapping(value = "/picture", method = RequestMethod.POST)
+	public ResponseEntity<Void> uploadProfilePicture(@RequestParam(name = "file") MultipartFile file) {
+
+		URI uri = service.uploadProfilePicture(file);
+
+		return ResponseEntity.created(uri).build();
+	}
 }
