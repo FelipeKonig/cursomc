@@ -28,32 +28,26 @@ public class S3Service {
 	private String bucketName;
 
 	public URI uploadFile(MultipartFile multipartFile) {
-
 		try {
 			String fileName = multipartFile.getOriginalFilename();
 			InputStream is = multipartFile.getInputStream();
 			String contentType = multipartFile.getContentType();
-
-			return uploadFile(fileName, is, contentType);
+			return uploadFile(is, fileName, contentType);
 		} catch (IOException e) {
 			throw new FileException("Erro de IO: " + e.getMessage());
 		}
-
 	}
 
-	public URI uploadFile(String fileName, InputStream is, String contentType) {
-
+	public URI uploadFile(InputStream is, String fileName, String contentType) {
 		try {
 			ObjectMetadata meta = new ObjectMetadata();
 			meta.setContentType(contentType);
 			LOG.info("Iniciando upload");
 			s3client.putObject(bucketName, fileName, is, meta);
 			LOG.info("Upload finalizado");
-
-			return s3client.getUrl(fileName, fileName).toURI();
+			return s3client.getUrl(bucketName, fileName).toURI();
 		} catch (URISyntaxException e) {
 			throw new FileException("Erro ao converter URL para URI");
 		}
 	}
-
 }

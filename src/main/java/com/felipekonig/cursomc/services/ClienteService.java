@@ -1,18 +1,19 @@
 package com.felipekonig.cursomc.services;
 
+import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-import javax.transaction.Transactional;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.felipekonig.cursomc.domain.Cidade;
@@ -34,27 +35,30 @@ public class ClienteService {
 
 	@Autowired
 	private BCryptPasswordEncoder pe;
-	
+
 	@Autowired
 	private ClienteRepository repo;
-	
-	@Autowired
-	private ClienteService service;
-	
+
 	@Autowired
 	private EnderecoRepository repoEndereco;
-	
+
 	@Autowired
 	private S3Service s3Service;
 
+	@Autowired
+	private ImageService imageService;
+
+	@Value("${img.prefix.client.profile}")
+	private String prefix;
+
 	public Cliente find(Integer id) {
-		
+
 		UserSS user = UserService.authenticated();
-		
-		if (user==null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
+
+		if (user == null || !user.hasRole(Perfil.ADMIN) && !id.equals(user.getId())) {
 			throw new SecurityException("Acesso negado");
 		}
-		
+
 		Optional<Cliente> cat = repo.findById(id);
 		return cat.orElseThrow(() -> new ObjectNotFoundException(
 				"Objeto não encontrado! Id: " + id + ", Tipo: " + Cliente.class.getName()));
@@ -114,20 +118,17 @@ public class ClienteService {
 		}
 		return cli;
 	}
-	
+
 	public URI uploadProfilePicture(MultipartFile multipartFile) {
-		
 		UserSS user = UserService.authenticated();
 		if (user == null) {
 			throw new AuthorizationException("Acesso negado");
 		}
-		URI uri = s3Service.uploadFile(multipartFile);
 		
-		Cliente cli = service.find(user.getId());
-		cli.setImageUrl(uri.toString());
-		repo.save(cli);
+		BufferedImage jpgImage = imageService.getJpgImageFromFile(multipartFile);
+		String fileName = prefix + user.getId() + ".jpg";
 		
-		return uri;
+		return s3Service.uploadFile(imageService.getInputStream(jpgImage, "jpg"), fileName, "image");
 	}
 
 	private void updateData(Cliente newObj, Cliente obj) {
