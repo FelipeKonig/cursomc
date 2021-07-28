@@ -25,6 +25,7 @@ import com.felipekonig.cursomc.dto.ClienteNewDTO;
 import com.felipekonig.cursomc.repositories.ClienteRepository;
 import com.felipekonig.cursomc.repositories.EnderecoRepository;
 import com.felipekonig.cursomc.security.UserSS;
+import com.felipekonig.cursomc.services.exceptions.AuthorizationException;
 import com.felipekonig.cursomc.services.exceptions.DataIntegrityException;
 import com.felipekonig.cursomc.services.exceptions.ObjectNotFoundException;
 
@@ -36,6 +37,9 @@ public class ClienteService {
 	
 	@Autowired
 	private ClienteRepository repo;
+	
+	@Autowired
+	private ClienteService service;
 	
 	@Autowired
 	private EnderecoRepository repoEndereco;
@@ -112,7 +116,18 @@ public class ClienteService {
 	}
 	
 	public URI uploadProfilePicture(MultipartFile multipartFile) {
-		return s3Service.uploadFile(multipartFile);
+		
+		UserSS user = UserService.authenticated();
+		if (user == null) {
+			throw new AuthorizationException("Acesso negado");
+		}
+		URI uri = s3Service.uploadFile(multipartFile);
+		
+		Cliente cli = service.find(user.getId());
+		cli.setImageUrl(uri.toString());
+		repo.save(cli);
+		
+		return uri;
 	}
 
 	private void updateData(Cliente newObj, Cliente obj) {
